@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Shell Quiz (Chapter 3)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #0056b3;
+            margin-bottom: 30px;
+        }
+        .question-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #e9f7ff;
+            border-left: 5px solid #007bff;
+            border-radius: 4px;
+        }
+        .question-text {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .options-container {
+            margin-bottom: 15px;
+        }
+        .options-container label {
+            display: block;
+            margin-bottom: 10px;
+            cursor: pointer;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fcfcfc;
+            transition: background-color 0.3s ease;
+        }
+        .options-container label:hover {
+            background-color: #eef;
+        }
+        .options-container input[type="radio"] {
+            margin-right: 10px;
+        }
+        .feedback {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .explanation {
+            margin-top: 10px;
+            font-style: italic;
+        }
+        .quiz-controls {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .quiz-controls button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 0 10px;
+            transition: background-color 0.3s ease;
+        }
+        .quiz-controls button:hover {
+            background-color: #0056b3;
+        }
+        .quiz-controls button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .score-area {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 30px;
+            display: none;
+            padding: 20px;
+            background-color: #e0ffe0;
+            border: 1px solid #b3e0b3;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Linux Shell Quiz (Chapter 3)</h1>
+        <div id="question-section" class="question-section">
+            <div class="question-text" id="question-text"></div>
+            <div class="options-container" id="options-container"></div>
+        </div>
+        <div id="feedback" class="feedback">
+            <p id="feedback-message"></p>
+            <p id="explanation" class="explanation"></p>
+        </div>
+        <div class="quiz-controls">
+            <button id="submit-btn">Submit Answer</button>
+            <button id="next-btn" style="display:none;">Next Question</button>
+            <button id="restart-btn" style="display:none;">Restart Quiz</button>
+        </div>
+        <div id="score-area" class="score-area">
+            Your score: <span id="final-score">0</span> / <span id="total-questions"></span>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "What is the primary program used to interpret and manage commands on UNIX systems, from which Linux was derived?",
+                options: ["Kernel", "Shell", "GUI", "Daemon"],
+                correctAnswerIndex: 1,
+                explanation: "On UNIX systems, the program used to interpret and manage commands was referred to as the **shell** [1]."
+            },
+            {
+                question: "Which of the following is an advantage of using the Linux shell for power users?",
+                options: ["It only supports graphical interfaces.", "It allows automated tasks through shell scripts.", "It prevents access to the filesystem.", "It is primarily for viewing web pages."],
+                correctAnswerIndex: 1,
+                explanation: "The shell allows users to **gather commands into a file using programming constructs**, and these programs are referred to as **shell scripts**, which are used to automate tasks [2]."
+            },
+            {
+                question: "How are shell sessions often accessed from a graphical desktop environment in Linux?",
+                options: ["Through a web browser", "From a Terminal window", "Via a print server", "By restarting the computer"],
+                correctAnswerIndex: 1,
+                explanation: "If you are using Linux from a graphical desktop, you will probably most often access the shell from a **Terminal window** [3]."
+            },
+            {
+                question: "What are 'virtual consoles' on a Linux system?",
+                options: ["Physical monitors connected to the computer.", "A way to have multiple shell sessions open at once in addition to the graphical interface.", "Graphical desktop environments like GNOME.", "Remote login sessions using SSH."],
+                correctAnswerIndex: 1,
+                explanation: "Virtual consoles are a way to have **multiple shell sessions open at once** in addition to the graphical interface you are using [3]."
+            },
+            {
+                question: "What is the purpose of the `pwd` command?",
+                options: ["To list files and directories.", "To display the current date and time.", "To show your current working directory.", "To change the computer's hostname."],
+                correctAnswerIndex: 2,
+                explanation: "The `pwd` command shows your **current working directory** [4]."
+            },
+            {
+                question: "What are the characters and words typed after a command to modify its behavior called?",
+                options: ["Parameters and values", "Directives and attributes", "Options and arguments", "Keywords and statements"],
+                correctAnswerIndex: 2,
+                explanation: "The characters and words you can type after a command are called **options and arguments** [5]."
+            },
+            {
+                question: "How are single-letter options typically preceded in Linux commands?",
+                options: ["By a plus sign (+)", "By a double hyphen (--)", "By a single letter (no prefix)", "By a hyphen (-)"],
+                correctAnswerIndex: 3,
+                explanation: "Options typically consist of a single letter, preceded by a **hyphen (-)** [5]."
+            },
+            {
+                question: "What is an 'alias' in the context of shell commands?",
+                options: ["A reserved word by the shell for special use.", "A program that searches the filesystem live for files.", "A name set by the `alias` command that represents a particular command and a set of options.", "A temporary variable used for arithmetic expressions."],
+                correctAnswerIndex: 2,
+                explanation: "**Aliases** are names set by the `alias` command that represent a particular command and a set of options [6]."
+            },
+            {
+                question: "What is the main advantage of using the `locate` command over the `find` command for searching files by name?",
+                options: ["`locate` searches the filesystem live, providing up-to-the-moment results.", "`locate` finds files faster because it searches a pre-built database.", "`locate` can find files based on a variety of attributes like size and permission.", "`locate` can execute commands on the found files directly."],
+                correctAnswerIndex: 1,
+                explanation: "A `locate` command **finds files faster because it searches a database** instead of having to search the whole filesystem live [7]."
+            },
+            {
+                question: "What is the primary function of shell history?",
+                options: ["To permanently store all commands executed by the root user.", "To allow users to recall, edit, and repeat previous command lines.", "To debug shell scripts before execution.", "To automatically complete command names and arguments."],
+                correctAnswerIndex: 1,
+                explanation: "The bash shell stores command lines you have typed in a history list, allowing you to **recall, edit, and repeat previous command lines** [8]."
+            },
+            {
+                question: "In command-line editing, what does the keystroke `Ctrl+A` do?",
+                options: ["Go forward one word.", "Go backward one character.", "Go to the beginning of the current line.", "Go to the end of the current line."],
+                correctAnswerIndex: 2,
+                explanation: "The keystroke **Ctrl+A** moves the cursor to the **beginning of the current line** [9]."
+            },
+            {
+                question: "Which keystroke is used to cut text to the end of the line in bash command-line editing?",
+                options: ["`Ctrl+D`", "`Alt+D`", "`Ctrl+K`", "`Alt+K`"],
+                correctAnswerIndex: 2,
+                explanation: "**Ctrl+K** is used to **cut text to the end of the line** [10]."
+            },
+            {
+                question: "What happens when you press the Tab key twice during command completion (e.g., after typing `$P`)?",
+                options: ["The command is immediately executed.", "The shell displays all possible completions for the entered string.", "The shell deletes the entered string.", "The shell shows an error message."],
+                correctAnswerIndex: 1,
+                explanation: "When several possible completions are available, pressing **Tab twice** at the point where you want to do completion will **display all possible completions** [11]."
+            },
+            {
+                question: "How can you run the previous command line from the history list?",
+                options: ["`!n` (where n is the command number)", "`!!`", "`!?string?`", "`history -r`"],
+                correctAnswerIndex: 1,
+                explanation: "To run the previous command line, you can type **`!!`** [12]."
+            },
+            {
+                question: "What is the function of the pipe (`|`) metacharacter?",
+                options: ["To direct the output of a command to a file.", "To connect the output from one command to the input of another command.", "To run multiple commands sequentially on the same line.", "To comment out a command line."],
+                correctAnswerIndex: 1,
+                explanation: "The **pipe (`|`) metacharacter connects the output from one command to the input of another command** [13]."
+            },
+            {
+                question: "Which metacharacter is used to direct the output of a command to a file, overwriting the file if it already exists?",
+                options: ["`|`", "`&`", "`>`", "`>>`"],
+                correctAnswerIndex: 2,
+                explanation: "The **right-arrow key (`>`)** can be used from a command line to direct the output of a command to a file [14], overwriting it if it exists [15]."
+            },
+            {
+                question: "What does it mean to 'expand a variable' in the shell?",
+                options: ["To create a new variable.", "To delete a variable from memory.", "To retrieve the value of a variable.", "To change the name of a variable."],
+                correctAnswerIndex: 2,
+                explanation: "You can **view the values of shell variables by preceding their names with a dollar sign ($)** [16], which is referred to as expanding a variable [17]."
+            },
+            {
+                question: "How do you generally set a variable named `NAME` to a `value` in a shell?",
+                options: ["`set NAME = value`", "`NAME == value`", "`NAME=value`", "`variable NAME value`"],
+                correctAnswerIndex: 2,
+                explanation: "The text implies setting variables by assigning a value directly, such as changing the `PS1` variable to a simple string like a dollar sign ($) [18]."
+            },
+            {
+                question: "What is the primary purpose of the `export` command for shell variables?",
+                options: ["To delete the variable.", "To make the variable available to subshells.", "To list all defined variables.", "To set the variable permanently for all users."],
+                correctAnswerIndex: 1,
+                explanation: "You can use the **`export` command to make shell variables available to subshells** [18]."
+            },
+            {
+                question: "What does the `$PS1` variable define?",
+                options: ["The shell's current working directory.", "The primary prompt string displayed in the shell.", "The history file size.", "The user's home directory."],
+                correctAnswerIndex: 1,
+                explanation: "The **`PS1` variable defines the primary prompt string** displayed in the shell [19]."
+            },
+            {
+                question: "What is the most common way to get information about commands, as well as other basic components of a Linux system?",
+                options: ["Using graphical help utilities.", "Reading man pages.", "Searching the internet.", "Consulting a Linux textbook."],
+                correctAnswerIndex: 1,
+                explanation: "**Man pages** are the most common means of getting information about commands, as well as other basic components of a Linux system [20]."
+            },
+            {
+                question: "When using the `man` command, which option allows you to search the name and summary sections of all man pages installed on the system?",
+                options: ["`--help`", "`-s`", "`-k`", "`-q`"],
+                correctAnswerIndex: 2,
+                explanation: "Using the **`-k` option**, you can search the name and summary sections of all man pages installed on the system [21]."
+            },
+            {
+                question: "Which section of manual pages (man pages) are regular users typically most interested in?",
+                options: ["Section 4 (Special Files)", "Section 8 (System Administration Tools and Daemons)", "Section 1 (User Commands)", "Section 5 (File Formats)"],
+                correctAnswerIndex: 2,
+                explanation: "As a regular user, you will be most interested in man pages in **section 1** [20]."
+            },
+            {
+                question: "What command can be used to get information about how a built-in bash command is used?",
+                options: ["`man`", "`--help`", "`help`", "`info`"],
+                correctAnswerIndex: 2,
+                explanation: "For help with a particular built-in command, you can type **`help command`** (e.g., `help | less`), which works with the bash shell only [22]."
+            },
+            {
+                question: "What is the result of using `Ctrl+F` in command-line editing?",
+                options: ["Go backward one word.", "Go forward one character.", "Delete the current word.", "Capitalize the current word."],
+                correctAnswerIndex: 1,
+                explanation: "The keystroke **Ctrl+F** means 'Character forward' and makes the cursor **go forward one character** [9]."
+            },
+            {
+                question: "What is the purpose of the `HISTFILE` environment variable?",
+                options: ["To set the maximum number of commands stored in history.", "To define the name and location of the file where shell history is stored.", "To specify the format of the history list display.", "To clear the entire command history."],
+                correctAnswerIndex: 1,
+                explanation: "The **`HISTFILE`** variable identifies the **name and location of the file where your shell history is stored** (for example, `/home/chris/.bash_history`) [18]."
+            },
+            {
+                question: "What is the purpose of the `HISTFILESIZE` environment variable?",
+                options: ["To set the maximum number of history entries in memory.", "To define the name of the history file.", "To limit the number of lines contained in the history file.", "To clear the history file."],
+                correctAnswerIndex: 2,
+                explanation: "The **`HISTFILESIZE`** variable **limits the number of lines contained in the history file** [18]."
+            },
+            {
+                question: "Which command shows your computer's hostname?",
+                options: ["`pwd`", "`ls`", "`date`", "`hostname`"],
+                correctAnswerIndex: 3,
+                explanation: "Typing **`hostname`** shows your computer’s hostname [4]."
+            },
+            {
+                question: "How can you group multiple single-letter options together for a command?",
+                options: ["By separating them with commas.", "By preceding each with a hyphen.", "By grouping them together after a single hyphen.", "Both B and C are valid ways."],
+                correctAnswerIndex: 3,
+                explanation: "You can **group single-letter options together** (e.g., `ls -lt`) or **precede each with a hyphen** (e.g., `ls -l -t`), to use more than one option at a time [5]."
+            },
+            {
+                question: "What is the primary purpose of the `ls` command?",
+                options: ["To change the current directory.", "To list the files and directories in your current directory.", "To display the shell version.", "To execute a shell script."],
+                correctAnswerIndex: 1,
+                explanation: "The **`ls` command lists the files and directories** in your current directory [5]."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackDiv = document.getElementById('feedback');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const explanationText = document.getElementById('explanation');
+        const submitBtn = document.getElementById('submit-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const scoreArea = document.getElementById('score-area');
+        const finalScoreSpan = document.getElementById('final-score');
+        const totalQuestionsSpan = document.getElementById('total-questions');
+
+        totalQuestionsSpan.textContent = questions.length;
+
+        function displayQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                const q = questions[currentQuestionIndex];
+                questionText.textContent = `${currentQuestionIndex + 1}. ${q.question}`;
+                optionsContainer.innerHTML = '';
+                q.options.forEach((option, index) => {
+                    const label = document.createElement('label');
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = 'quiz-option';
+                    radio.value = index;
+                    label.appendChild(radio);
+                    label.appendChild(document.createTextNode(option));
+                    optionsContainer.appendChild(label);
+                });
+
+                feedbackDiv.style.display = 'none';
+                feedbackDiv.className = 'feedback';
+                submitBtn.style.display = 'inline-block';
+                nextBtn.style.display = 'none';
+                submitBtn.disabled = false;
+                // Enable all radio buttons for new question
+                optionsContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
+                    radio.disabled = false;
+                });
+            } else {
+                showFinalScore();
+            }
+        }
+
+        function checkAnswer() {
+            const selectedOption = document.querySelector('input[name="quiz-option"]:checked');
+            if (!selectedOption) {
+                alert('Please select an answer!');
+                return;
+            }
+
+            const selectedAnswerIndex = parseInt(selectedOption.value);
+            const q = questions[currentQuestionIndex];
+
+            // Disable all radio buttons after submission
+            optionsContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.disabled = true;
+            });
+
+            if (selectedAnswerIndex === q.correctAnswerIndex) {
+                score++;
+                feedbackDiv.className = 'feedback correct';
+                feedbackMessage.textContent = 'Correct!';
+            } else {
+                feedbackDiv.className = 'feedback incorrect';
+                feedbackMessage.textContent = 'Incorrect.';
+            }
+            explanationText.innerHTML = q.explanation;
+            feedbackDiv.style.display = 'block';
+            submitBtn.style.display = 'none';
+            nextBtn.style.display = 'inline-block';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            displayQuestion();
+        }
+
+        function showFinalScore() {
+            questionText.style.display = 'none';
+            optionsContainer.style.display = 'none';
+            feedbackDiv.style.display = 'none';
+            submitBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+            restartBtn.style.display = 'inline-block';
+
+            finalScoreSpan.textContent = score;
+            scoreArea.style.display = 'block';
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            questionText.style.display = 'block';
+            optionsContainer.style.display = 'block';
+            scoreArea.style.display = 'none';
+            restartBtn.style.display = 'none';
+            displayQuestion();
+        }
+
+        submitBtn.addEventListener('click', checkAnswer);
+        nextBtn.addEventListener('click', nextQuestion);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        // Initial display
+        displayQuestion();
+    </script>
+</body>
+</html>
