@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 4 Quiz: Linux Filesystem Navigation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #0056b3;
+            margin-bottom: 30px;
+        }
+        .question-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #e9f7ff;
+            border-left: 5px solid #007bff;
+            border-radius: 4px;
+        }
+        .question-text {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .options-container {
+            margin-bottom: 15px;
+        }
+        .options-container label {
+            display: block;
+            margin-bottom: 10px;
+            cursor: pointer;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fcfcfc;
+            transition: background-color 0.3s ease;
+        }
+        .options-container label:hover {
+            background-color: #eef;
+        }
+        .options-container input[type="radio"] {
+            margin-right: 10px;
+        }
+        .feedback {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .explanation {
+            margin-top: 10px;
+            font-style: italic;
+        }
+        .quiz-controls {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .quiz-controls button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 0 10px;
+            transition: background-color 0.3s ease;
+        }
+        .quiz-controls button:hover {
+            background-color: #0056b3;
+        }
+        .quiz-controls button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .score-area {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 30px;
+            display: none;
+            padding: 20px;
+            background-color: #e0ffe0;
+            border: 1px solid #b3e0b3;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Chapter 4 Quiz: Linux Filesystem Navigation</h1>
+        <div id="question-section" class="question-section">
+            <div class="question-text" id="question-text"></div>
+            <div class="options-container" id="options-container"></div>
+        </div>
+        <div id="feedback" class="feedback">
+            <p id="feedback-message"></p>
+            <p id="explanation" class="explanation"></p>
+        </div>
+        <div class="quiz-controls">
+            <button id="submit-btn">Submit Answer</button>
+            <button id="next-btn" style="display:none;">Next Question</button>
+            <button id="restart-btn" style="display:none;">Restart Quiz</button>
+        </div>
+        <div id="score-area" class="score-area">
+            Your score: <span id="final-score">0</span> / <span id="total-questions"></span>
+        </div>
+    </div>
+
+    <script>
+        // Array of quiz questions
+        const questions = [
+  {
+    id: "q1",
+    question: "What command is used to change directories in Linux?",
+    options: ["ls", "cd", "pwd", "mv"],
+    answer: "cd",
+    correctAnswerIndex: 1,
+    explanation: "Correct! 'cd' is used to change the current working directory in Linux."
+  },
+  {
+    id: "q2",
+    question: "Which directory is the root of the Linux filesystem?",
+    options: ["/root", "/etc", "/", "/home"],
+    answer: "/",
+    correctAnswerIndex: 2,
+    explanation: "Correct! The root of the filesystem is represented by a single slash '/'."
+  },
+  {
+    id: "q3",
+    question: "What does the command 'pwd' do?",
+    options: [
+      "Prints the contents of a directory",
+      "Changes to the parent directory",
+      "Displays the present working directory",
+      "Moves a file to another location"
+    ],
+    answer: "Displays the present working directory",
+    correctAnswerIndex: 2,
+    explanation: "Correct! 'pwd' shows the full absolute path of the current directory."
+  },
+  {
+    id: "q4",
+    question: "What is the purpose of the 'ls -a' command?",
+    options: [
+      "Lists all directories recursively",
+      "Lists files with detailed information",
+      "Lists all files including hidden files",
+      "Shows disk usage"
+    ],
+    answer: "Lists all files including hidden files",
+    correctAnswerIndex: 2,
+    explanation: "Correct! The '-a' flag shows hidden files starting with a dot (e.g., .bashrc)."
+  },
+  {
+    id: "q5",
+    question: "Which path is an example of a relative path?",
+    options: ["/etc/nginx", "/home/user/docs", "../downloads", "/usr/bin"],
+    answer: "../downloads",
+    correctAnswerIndex: 2,
+    explanation: "Correct! '../downloads' is a relative path referring to a sibling directory."
+  },
+  {
+    id: "q6",
+    question: "Which command lists directory contents with human-readable file sizes?",
+    options: ["ls -a", "ls -lh", "ls -R", "ls -F"],
+    answer: "ls -lh",
+    correctAnswerIndex: 1,
+    explanation: "Correct! 'ls -lh' displays files in long format with human-readable sizes."
+  },
+  {
+    id: "q7",
+    question: "What does the '~' character represent in the Linux filesystem?",
+    options: ["Root directory", "Parent directory", "User's home directory", "Temporary directory"],
+    answer: "User's home directory",
+    correctAnswerIndex: 2,
+    explanation: "Correct! The tilde '~' represents the current user's home directory."
+  },
+  {
+    id: "q8",
+    question: "What does the '..' symbol refer to in a path?",
+    options: ["Current directory", "Previous command", "Parent directory", "Root directory"],
+    answer: "Parent directory",
+    correctAnswerIndex: 2,
+    explanation: "Correct! '..' refers to the parent directory of the current location."
+  },
+  {
+    id: "q9",
+    question: "Which of the following is a virtual filesystem?",
+    options: ["/etc", "/dev", "/proc", "/home"],
+    answer: "/proc",
+    correctAnswerIndex: 2,
+    explanation: "Correct! '/proc' is a virtual filesystem that provides process and kernel information."
+  },
+  {
+    id: "q10",
+    question: "What command would you use to list all files, including hidden ones?",
+    options: ["ls -h", "ls -l", "ls -a", "ls -R"],
+    answer: "ls -a",
+    correctAnswerIndex: 2,
+    explanation: "Correct! The '-a' flag includes hidden files (those beginning with a dot)."
+  },
+  {
+    id: "q11",
+    question: "What does 'cd ..' do?",
+    options: ["Goes to root directory", "Moves one directory up", "Moves one directory down", "Deletes the directory"],
+    answer: "Moves one directory up",
+    correctAnswerIndex: 1,
+    explanation: "Correct! 'cd ..' navigates to the parent directory of the current working directory."
+  },
+  {
+    id: "q12",
+    question: "Which directory typically contains user-specific configuration files?",
+    options: ["/etc", "/home", "/usr", "/var"],
+    answer: "/home",
+    correctAnswerIndex: 1,
+    explanation: "Correct! User-specific configurations are usually found in the user's home directory."
+  },
+  {
+    id: "q13",
+    question: "Which symbol is used to refer to the previous working directory?",
+    options: ["~", ".", "-", ".."],
+    answer: "-",
+    correctAnswerIndex: 2,
+    explanation: "Correct! 'cd -' returns to the previous working directory."
+  },
+  {
+    id: "q14",
+    question: "Which command will recursively list all subdirectories?",
+    options: ["ls -a", "ls -R", "ls -h", "ls -l"],
+    answer: "ls -R",
+    correctAnswerIndex: 1,
+    explanation: "Correct! The '-R' option tells 'ls' to list directories and their contents recursively."
+  },
+  {
+    id: "q15",
+    question: "What does the '.' symbol mean when used in a path?",
+    options: ["Home directory", "Root directory", "Current directory", "Temporary directory"],
+    answer: "Current directory",
+    correctAnswerIndex: 2,
+    explanation: "Correct! '.' represents the current working directory."
+  },
+  {
+    id: "q16",
+    question: "Which command helps navigate back to the home directory?",
+    options: ["cd ..", "cd -", "cd /", "cd ~"],
+    answer: "cd ~",
+    correctAnswerIndex: 3,
+    explanation: "Correct! 'cd ~' sends you back to the current user's home directory."
+  },
+  {
+    id: "q17",
+    question: "Which directory stores logs like system events and kernel logs?",
+    options: ["/tmp", "/home", "/etc", "/var"],
+    answer: "/var",
+    correctAnswerIndex: 3,
+    explanation: "Correct! Log files like syslog are stored in '/var/log'."
+  },
+  {
+    id: "q18",
+    question: "What does 'ls -F' do?",
+    options: ["List files including hidden ones", "List directories recursively", "Classify files with indicators", "Display file size"],
+    answer: "Classify files with indicators",
+    correctAnswerIndex: 2,
+    explanation: "Correct! 'ls -F' appends symbols to classify files, like '/' for directories."
+  },
+  {
+    id: "q19",
+    question: "Which command navigates to the root directory?",
+    options: ["cd root", "cd .", "cd /", "cd ~root"],
+    answer: "cd /",
+    correctAnswerIndex: 2,
+    explanation: "Correct! 'cd /' takes you to the root of the Linux filesystem."
+  },
+  {
+    id: "q20",
+    question: "What does the 'tree' command do in Linux?",
+    options: ["Creates a tree structure", "Lists directory in a tree format", "Deletes nested folders", "Searches trees"],
+    answer: "Lists directory in a tree format",
+    correctAnswerIndex: 1,
+    explanation: "Correct! The 'tree' command visually displays directory contents in a tree hierarchy."
+  },
+  {
+    id: "q21",
+    question: "Which directory is used to mount external media temporarily?",
+    options: ["/boot", "/mnt", "/opt", "/srv"],
+    answer: "/mnt",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '/mnt' is used to temporarily mount external filesystems."
+  },
+  {
+    id: "q22",
+    question: "How do you move up two directory levels?",
+    options: ["cd ../..", "cd ..", "cd -", "cd ../../"],
+    answer: "cd ../../",
+    correctAnswerIndex: 0,
+    explanation: "Correct! '../../' moves up two levels in the directory tree."
+  },
+  {
+    id: "q23",
+    question: "What is stored in the /etc directory?",
+    options: ["User files", "Temporary files", "System configuration files", "Log files"],
+    answer: "System configuration files",
+    correctAnswerIndex: 2,
+    explanation: "Correct! '/etc' contains system-wide configuration files and settings."
+  },
+  {
+    id: "q24",
+    question: "Which flag with ls displays file types and permissions?",
+    options: ["-l", "-a", "-R", "-h"],
+    answer: "-l",
+    correctAnswerIndex: 0,
+    explanation: "Correct! 'ls -l' displays detailed information including file permissions."
+  },
+  {
+    id: "q25",
+    question: "What does the /home directory contain?",
+    options: ["System binaries", "Kernel logs", "User home folders", "Temporary files"],
+    answer: "User home folders",
+    correctAnswerIndex: 2,
+    explanation: "Correct! '/home' contains home directories for all users."
+  },
+  {
+    id: "q26",
+    question: "Which directory contains essential user command binaries?",
+    options: ["/usr/bin", "/opt/bin", "/root/bin", "/etc/bin"],
+    answer: "/usr/bin",
+    correctAnswerIndex: 0,
+    explanation: "Correct! Essential user command binaries are typically found in /usr/bin."
+  },
+  {
+    id: "q27",
+    question: "What does the command 'cd -' do?",
+    options: ["Goes to root", "Goes to home", "Switches to previous directory", "Deletes directory"],
+    answer: "Switches to previous directory",
+    correctAnswerIndex: 2,
+    explanation: "Correct! 'cd -' takes you to the previous working directory."
+  },
+  {
+    id: "q28",
+    question: "Which directory contains device files?",
+    options: ["/etc", "/lib", "/bin", "/dev"],
+    answer: "/dev",
+    correctAnswerIndex: 3,
+    explanation: "Correct! The /dev directory contains special device files."
+  },
+  {
+    id: "q29",
+    question: "What symbol represents the current directory in Linux?",
+    options: ["~", ".", "..", "/"],
+    answer: ".",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '.' denotes the current directory in Linux."
+  },
+  {
+    id: "q30",
+    question: "What does the command 'ls -l /etc' do?",
+    options: ["Lists hidden files", "Displays logs", "Shows detailed contents of /etc", "Deletes files in /etc"],
+    answer: "Shows detailed contents of /etc",
+    correctAnswerIndex: 2,
+    explanation: "Correct! 'ls -l /etc' lists contents of /etc with details."
+  },
+  {
+    id: "q31",
+    question: "What is the default directory when you log into a Linux system?",
+    options: ["/etc", "/root", "/home/username", "/tmp"],
+    answer: "/home/username",
+    correctAnswerIndex: 2,
+    explanation: "Correct! Upon login, users are placed in their home directory."
+  },
+  {
+    id: "q32",
+    question: "What is the function of the 'basename' command?",
+    options: ["Removes file", "Renames directory", "Displays filename from path", "Shows file permissions"],
+    answer: "Displays filename from path",
+    correctAnswerIndex: 2,
+    explanation: "Correct! 'basename' extracts the filename from a path."
+  },
+  {
+    id: "q33",
+    question: "What is the purpose of the '/tmp' directory?",
+    options: ["Storing permanent files", "Temporary file storage", "Binary storage", "Log storage"],
+    answer: "Temporary file storage",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '/tmp' holds temporary files that are cleared regularly."
+  },
+  {
+    id: "q34",
+    question: "Which option with 'ls' shows file sizes in KB, MB etc.?",
+    options: ["-h", "-a", "-r", "-s"],
+    answer: "-h",
+    correctAnswerIndex: 0,
+    explanation: "Correct! The '-h' option shows human-readable sizes."
+  },
+  {
+    id: "q35",
+    question: "What does 'ls -ltr' display?",
+    options: ["Longest filenames", "Reverse time-sorted list", "User permissions", "Root-only files"],
+    answer: "Reverse time-sorted list",
+    correctAnswerIndex: 1,
+    explanation: "Correct! 'ls -ltr' lists files sorted by modification time in reverse."
+  },
+  {
+    id: "q36",
+    question: "What symbol represents hidden files in Linux?",
+    options: ["*", "-", ".", "~"],
+    answer: ".",
+    correctAnswerIndex: 2,
+    explanation: "Correct! Hidden files begin with a dot (.) in Linux."
+  },
+  {
+    id: "q37",
+    question: "Which directory contains configuration files used during boot?",
+    options: ["/boot", "/etc", "/var", "/proc"],
+    answer: "/etc",
+    correctAnswerIndex: 1,
+    explanation: "Correct! /etc has boot-time configuration files."
+  },
+  {
+    id: "q38",
+    question: "Which command will print only directories from current path?",
+    options: ["ls -d */", "ls | grep d", "find -type f", "cd -d"],
+    answer: "ls -d */",
+    correctAnswerIndex: 0,
+    explanation: "Correct! 'ls -d */' lists only directories."
+  },
+  {
+    id: "q39",
+    question: "How to find out your current directory in shell?",
+    options: ["cd", "pwd", "ls", "whoami"],
+    answer: "pwd",
+    correctAnswerIndex: 1,
+    explanation: "Correct! 'pwd' prints the current working directory."
+  },
+  {
+    id: "q40",
+    question: "Which command gives full path of another command?",
+    options: ["locate", "whereis", "which", "find"],
+    answer: "which",
+    correctAnswerIndex: 2,
+    explanation: "Correct! 'which' tells the full path of a command."
+  },
+  {
+    id: "q41",
+    question: "Which directory stores boot loader files?",
+    options: ["/etc", "/boot", "/bin", "/usr"],
+    answer: "/boot",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '/boot' holds files like GRUB used during startup."
+  },
+  {
+    id: "q42",
+    question: "Which directory contains the kernel and bootloader files?",
+    options: ["/usr", "/boot", "/opt", "/proc"],
+    answer: "/boot",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '/boot' holds kernel images and bootloader configuration files."
+  },
+  {
+    id: "q43",
+    question: "Which directory is used for service‑specific data like FTP or web?",
+    options: ["/srv", "/mnt", "/opt", "/tmp"],
+    answer: "/srv",
+    correctAnswerIndex: 0,
+    explanation: "Correct! '/srv' is used for data served by system services."
+  },
+  {
+    id: "q44",
+    question: "What does 'ls --color -F' do?",
+    options: ["Lists hidden with human sizes", "Classifies file types and adds color coding", "Lists recursively", "Shows file permissions"],
+    answer: "Classifies file types and adds color coding",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '--color' adds color, and '-F' classifies file types with symbols."
+  },
+  {
+    id: "q45",
+    question: "Which directory provides information about running processes and kernel parameters?",
+    options: ["/proc", "/etc", "/home", "/dev"],
+    answer: "/proc",
+    correctAnswerIndex: 0,
+    explanation: "Correct! '/proc' is a virtual filesystem exposing process and kernel info."
+  },
+  {
+    id: "q46",
+    question: "Which directory holds shared libraries needed by binaries?",
+    options: ["/lib", "/tmp", "/usr/bin", "/opt"],
+    answer: "/lib",
+    correctAnswerIndex: 0,
+    explanation: "Correct! '/lib' (and '/lib64') contains essential shared libraries."
+  },
+  {
+    id: "q47",
+    question: "Which command takes you to your previous directory?",
+    options: ["cd ..", "cd -", "cd /", "cd ~"],
+    answer: "cd -",
+    correctAnswerIndex: 1,
+    explanation: "Correct! 'cd -' switches you back to the last directory you visited."
+  },
+  {
+    id: "q48",
+    question: "Which directory is the home directory for the root user?",
+    options: ["/root", "/home/root", "/root/home", "/usr/root"],
+    answer: "/root",
+    correctAnswerIndex: 0,
+    explanation: "Correct! '/root' is root user's private home directory."
+  },
+  {
+    id: "q49",
+    question: "Which command shows dot‑files as well as regular files?",
+    options: ["ls -R", "ls -l", "ls -a", "ls -h"],
+    answer: "ls -a",
+    correctAnswerIndex: 2,
+    explanation: "Correct! '-a' option shows hidden dot‑files (starting with '.')."
+  },
+  {
+    id: "q50",
+    question: "What is the effect of running 'cd ../..'?",
+    options: ["Move two levels down", "Return home", "Move two levels up", "Go to root"],
+    answer: "Move two levels up",
+    correctAnswerIndex: 2,
+    explanation: "Correct! '../..' ascends two directory levels."
+  },
+  {
+    id: "q51",
+    question: "Which directory typically stores log files under '/var'?",
+    options: ["var/tmp", "var/log", "var/home", "var/opt"],
+    answer: "var/log",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '/var/log' contains system and service log files."
+  },
+  {
+    id: "q52",
+    question: "In an interactive shell, which shortcut autocompletes filenames?",
+    options: ["Double‑click", "Tab‑key", "Enter", "Space"],
+    answer: "Tab‑key",
+    correctAnswerIndex: 1,
+    explanation: "Correct! Pressing Tab triggers filename or directory autocomplete."
+  },
+  {
+    id: "q53",
+    question: "To verify which directory you are in, you type?",
+    options: ["ls", "which", "pwd", "path"],
+    answer: "pwd",
+    correctAnswerIndex: 2,
+    explanation: "Correct! 'pwd' (print working directory) reveals your current path."
+  },
+  {
+    id: "q54",
+    question: "Which flag shows file sizes in a human‑readable format (KB, MB)?",
+    options: ["-l", "-R", "-h", "-F"],
+    answer: "-h",
+    correctAnswerIndex: 2,
+    explanation: "Correct! The '-h' option shows human-readable sizes."
+  },
+  {
+    id: "q55",
+    question: "Which command lists entries including subdirectories within a directory?",
+    options: ["ls -a", "ls -h", "ls -R", "ls -F"],
+    answer: "ls -R",
+    correctAnswerIndex: 2,
+    explanation: "Correct! '-R' recursively lists directory contents."
+  },
+  {
+    id: "q56",
+    question: "Which directory is a mount point for removable media by default?",
+    options: ["/home", "/media", "/etc", "/srv"],
+    answer: "/media",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '/media' is commonly used for automounting USBs and CDs."
+  },
+  {
+    id: "q57",
+    question: "Which command-line tool shows detailed file info including owner and permissions?",
+    options: ["ls -a", "ls -l", "pwd", "cd"],
+    answer: "ls -l",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '-l' shows file permissions, owner, size, and timestamp."
+  },
+  {
+    id: "q58",
+    question: "An absolute path always starts with what character?",
+    options: [".", "~", "/", "-"],
+    answer: "/",
+    correctAnswerIndex: 2,
+    explanation: "Correct! Absolute paths begin at root '/' regardless of current directory."
+  },
+  {
+    id: "q59",
+    question: "A relative path depends on what?",
+    options: ["Home directory", "Current directory", "/root", "/etc"],
+    answer: "Current directory",
+    correctAnswerIndex: 1,
+    explanation: "Correct! Relative paths are computed from wherever you currently are."
+  },
+  {
+    id: "q60",
+    question: "Which directory is meant for third‑party add‑on software?",
+    options: ["/opt", "/tmp", "/usr", "/bin"],
+    answer: "/opt",
+    correctAnswerIndex: 0,
+    explanation: "Correct! '/opt' is used for optional, extra, or vendor packages."
+  },
+  {
+    id: "q61",
+    question: "Which directory contains essential system binaries?",
+    options: ["/usr/bin", "/bin", "/home/bin", "/var/bin"],
+    answer: "/bin",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '/bin' has essential system binaries available to all users."
+  },
+  {
+    id: "q62",
+    question: "What is the benefit of using 'cd ../../folder'?",
+    options: ["Absolute path", "Single letter", "Mixed relative path navigation", "List directory"],
+    answer: "Mixed relative path navigation",
+    correctAnswerIndex: 2,
+    explanation: "Correct! This navigates up two levels then enters 'folder'."
+  },
+  {
+    id: "q63",
+    question: "Which directory would you examine for service configuration files?",
+    options: ["/srv", "/var", "/etc", "/opt"],
+    answer: "/etc",
+    correctAnswerIndex: 2,
+    explanation: "Correct! '/etc' stores system and service configuration files."
+  },
+  {
+    id: "q64",
+    question: "What is represented by the file path '/home/user/.bashrc'?",
+    options: ["A directory", "An executable file", "A hidden configuration file", "Log file"],
+    answer: "A hidden configuration file",
+    correctAnswerIndex: 2,
+    explanation: "Correct! Files beginning with '.' are hidden; '.bashrc' is user config."
+  },
+  {
+    id: "q65",
+    question: "What happens if you run 'cd' with no arguments?",
+    options: ["Goes to root", "Stays current directory", "Goes to home directory", "Throws error"],
+    answer: "Goes to home directory",
+    correctAnswerIndex: 2,
+    explanation: "Correct! 'cd' alone returns you to your home directory."
+  },
+  {
+    id: "q66",
+    question: "Which command shows only directories (not files) in current path?",
+    options: ["ls -F", "ls -d */", "ls -a", "ls -lh"],
+    answer: "ls -d */",
+    correctAnswerIndex: 1,
+    explanation: "Correct! 'ls -d */' filters the listing to only directories."
+  },
+  {
+    id: "q67",
+    question: "If you're in /home/user/docs, what does 'cd ../../../' do?",
+    options: ["Goes to /home", "Goes to /", "Goes to /home/user", "Does nothing"],
+    answer: "Goes to /",
+    correctAnswerIndex: 1,
+    explanation: "Correct! Three '..' go up three levels from docs → /home/user → /home → /."
+  },
+  {
+    id: "q68",
+    question: "What is typically found under /usr/local/bin?",
+    options: ["User binaries installed locally", "Kernel modules", "Log files", "Temporary files"],
+    answer: "User binaries installed locally",
+    correctAnswerIndex: 0,
+    explanation: "Correct! '/usr/local/bin' holds locally installed executable binaries."
+  },
+  {
+    id: "q69",
+    question: "Which directory holds dynamically mounted USB drives often?",
+    options: ["/mnt", "/media", "/opt", "/srv"],
+    answer: "/media",
+    correctAnswerIndex: 1,
+    explanation: "Correct! Modern Linux uses '/media' for auto‑mounted drives."
+  },
+  {
+    id: "q70",
+    question: "What does 'cd ~/Downloads' do?",
+    options: ["Go to root", "Change to Downloads inside home", "Go to /Downloads", "Stay in current dir"],
+    answer: "Change to Downloads inside home",
+    correctAnswerIndex: 1,
+    explanation: "Correct! The tilde ' ~ ' specifies the user's home directory."
+  },
+  {
+    id: "q71",
+    question: "Which option of 'ls' sorts files by modification time, newest last?",
+    options: ["-lt", "-ltr", "-lu", "-lat"],
+    answer: "-ltr",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '-ltr' lists files by time (oldest first) in long format."
+  },
+  {
+    id: "q72",
+    question: "What directory contains process and system statistics?",
+    options: ["/var/stat", "/sys", "/proc", "/run"],
+    answer: "/proc",
+    correctAnswerIndex: 2,
+    explanation: "Correct! '/proc' is a virtual fs exposing system/process info."
+  },
+  {
+    id: "q73",
+    question: "How to move two levels up and enter 'work' directory in one command?",
+    options: ["cd ../../work", "cd ../work", "cd work/../../", "cd work.."],
+    answer: "cd ../../work",
+    correctAnswerIndex: 0,
+    explanation: "Correct! '../../work' moves up two levels then into 'work'."
+  },
+  {
+    id: "q74",
+    question: "What does 'ls -lah' do?",
+    options: ["List hidden with human sizes", "List only hidden", "List recursively", "Delete hidden"],
+    answer: "List hidden with human sizes",
+    correctAnswerIndex: 0,
+    explanation: "Correct! '-l' long, '-a' all files, '-h' human‑readable sizes."
+  },
+  {
+    id: "q75",
+    question: "Which directory is usually cleared at reboot?",
+    options: ["/home", "/tmp", "/opt", "/srv"],
+    answer: "/tmp",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '/tmp' is temporary storage, cleared periodically."
+  },
+  {
+    id: "q76",
+    question: "Which command helps find full path of an executable?",
+    options: ["which", "whereis", "locate", "find"],
+    answer: "which",
+    correctAnswerIndex: 0,
+    explanation: "Correct! 'which <cmd>' shows location used by shell."
+  },
+  {
+    id: "q77",
+    question: "Which directory is typically for static files served by services?",
+    options: ["/srv", "/opt", "/usr", "/var"],
+    answer: "/srv",
+    correctAnswerIndex: 0,
+    explanation: "Correct! '/srv' contains service data like web or FTP root."
+  },
+  {
+    id: "q78",
+    question: "Which directory stores runtime variable data (PID files, sockets)?",
+    options: ["/var", "/run", "/tmp", "/dev"],
+    answer: "/run",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '/run' stores runtime state like sockets and PID files."
+  },
+  {
+    id: "q79",
+    question: "How do you go up one level then into sibling 'docs' directory?",
+    options: ["cd docs/../", "cd ../docs", "cd ./docs", "cd docs"],
+    answer: "cd ../docs",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '../docs' means parent then 'docs' directory."
+  },
+  {
+    id: "q80",
+    question: "What directory contains optional third‑party software?",
+    options: ["/opt", "/usr/local", "/usr", "/bin"],
+    answer: "/opt",
+    correctAnswerIndex: 0,
+    explanation: "Correct! '/opt' is designated for add‑on packages."
+  },
+  {
+    id: "q81",
+    question: "Which symbol refers to the previous directory automatically?",
+    options: ["~", "-", ".", "/"],
+    answer: "-",
+    correctAnswerIndex: 1,
+    explanation: "Correct! 'cd -' toggles back to the last directory."
+  },
+  {
+    id: "q82",
+    question: "What is the default directory listing format of 'ls'? ",
+    options: ["Long with details", "Single column", "Multi column default", "Color-coded"],
+    answer: "Multi column default",
+    correctAnswerIndex: 2,
+    explanation: "Correct! Without options 'ls' displays multi‑column output."
+  },
+  {
+    id: "q83",
+    question: "Which command shows only hidden files in current directory?",
+    options: ["ls .*", "ls -a", "ls -F", "ls -h"],
+    answer: "ls -a",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '-a' reveals hidden dot files too."
+  },
+  {
+    id: "q84",
+    question: "What does 'cd ../' represent?",
+    options: ["Current directory", "Parent directory", "Root directory", "Home"],
+    answer: "Parent directory",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '../' means move up one level."
+  },
+  {
+    id: "q85",
+    question: "Which directory holds library files shared among binaries?",
+    options: ["/lib", "/usr/lib", "/usr/local/lib", "/opt/lib"],
+    answer: "/lib",
+    correctAnswerIndex: 0,
+    explanation: "Correct! '/lib' is the system library repository."
+  },
+  {
+    id: "q86",
+    question: "Which directory contains optional user-installed binaries?",
+    options: ["/usr/local/bin", "/bin", "/sbin", "/root/bin"],
+    answer: "/usr/local/bin",
+    correctAnswerIndex: 0,
+    explanation: "Correct! '/usr/local/bin' holds locally added executables."
+  },
+  {
+    id: "q87",
+    question: "Which directory provides virtual interface to kernel devices?",
+    options: ["/dev", "/sys", "/proc", "/run"],
+    answer: "/sys",
+    correctAnswerIndex: 1,
+    explanation: "Correct! '/sys' exposes device and kernel attributes."
+  },
+  {
+    id: "q88",
+    question: "What is the effect of 'cd' with no args?",
+    options: ["Goes to root", "Goes to last dir", "Goes home", "Stays same"],
+    answer: "Goes home",
+    correctAnswerIndex: 2,
+    explanation: "Correct! Without args, 'cd' defaults to the user's home directory."
+  },
+  {
+    id: "q89",
+    question: "Which command shows file listing in human-readable sizes sorted by time?",
+    options: ["ls -h", "ls -lt", "ls -lhtr", "ls -ltrh"],
+    answer: "ls -ltrh",
+    correctAnswerIndex: 3,
+    explanation: "Correct! Combines -l (long), -t (time sort), -r (reverse), -h (human sizes)."
+  },
+  {
+    id: "q90",
+    question: "Which directory stores important binary executables for superuser?",
+    options: ["/usr/bin", "/bin", "/sbin", "/usr/sbin"],
+    answer: "/sbin",
+    correctAnswerIndex: 2,
+    explanation: "Correct! '/sbin' contains system binaries for administrative tasks."
+  }
+];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackDiv = document.getElementById('feedback');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const explanationText = document.getElementById('explanation');
+        const submitBtn = document.getElementById('submit-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const scoreArea = document.getElementById('score-area');
+        const finalScoreSpan = document.getElementById('final-score');
+        const totalQuestionsSpan = document.getElementById('total-questions');
+
+        // Set the total number of questions in the score display
+        totalQuestionsSpan.textContent = questions.length;
+
+        /**
+         * Displays the current question and its options.
+         * Hides feedback and resets buttons for a new question.
+         */
+        function displayQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                const q = questions[currentQuestionIndex];
+                questionText.textContent = `${currentQuestionIndex + 1}. ${q.question}`;
+                optionsContainer.innerHTML = ''; // Clear previous options
+
+                // Create radio buttons for each option
+                q.options.forEach((option, index) => {
+                    const label = document.createElement('label');
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = 'quiz-option'; // Same name for all radios in a question
+                    radio.value = index; // Store the index of the option
+                    label.appendChild(radio);
+                    label.appendChild(document.createTextNode(option));
+                    optionsContainer.appendChild(label);
+                });
+
+                // Reset feedback and button states
+                feedbackDiv.style.display = 'none';
+                feedbackDiv.className = 'feedback'; // Remove correct/incorrect classes
+                submitBtn.style.display = 'inline-block';
+                nextBtn.style.display = 'none';
+                submitBtn.disabled = false;
+                // Ensure all radio buttons are enabled for the new question
+                optionsContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
+                    radio.disabled = false;
+                });
+            } else {
+                // If all questions are answered, show final score
+                showFinalScore();
+            }
+        }
+
+        /**
+         * Checks the user's selected answer against the correct answer.
+         * Updates score and displays feedback.
+         */
+        function checkAnswer() {
+            const selectedOption = document.querySelector('input[name="quiz-option"]:checked');
+            if (!selectedOption) {
+                alert('Please select an answer before submitting!');
+                return;
+            }
+
+            const selectedAnswerIndex = parseInt(selectedOption.value);
+            const q = questions[currentQuestionIndex];
+
+            // Disable all radio buttons after submission to prevent re-selection
+            optionsContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.disabled = true;
+            });
+
+            // Check if the selected index matches the correct answer index
+            if (selectedAnswerIndex === q.correctAnswerIndex) {
+                score++;
+                feedbackDiv.className = 'feedback correct';
+                feedbackMessage.textContent = 'Correct!';
+            } else {
+                feedbackDiv.className = 'feedback incorrect';
+                feedbackMessage.textContent = 'Incorrect.';
+            }
+            explanationText.innerHTML = q.explanation; // Display the explanation
+            feedbackDiv.style.display = 'block'; // Show feedback
+            submitBtn.style.display = 'none'; // Hide submit button
+            nextBtn.style.display = 'inline-block'; // Show next button
+        }
+
+        /**
+         * Advances to the next question or shows the final score if all questions are answered.
+         */
+        function nextQuestion() {
+            currentQuestionIndex++;
+            displayQuestion();
+        }
+
+        /**
+         * Displays the final score and hides quiz elements.
+         */
+        function showFinalScore() {
+            questionText.style.display = 'none';
+            optionsContainer.style.display = 'none';
+            feedbackDiv.style.display = 'none';
+            submitBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+            restartBtn.style.display = 'inline-block'; // Show restart button
+
+            finalScoreSpan.textContent = score; // Update final score
+            scoreArea.style.display = 'block'; // Show score area
+        }
+
+        /**
+         * Resets the quiz to its initial state and starts over.
+         */
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            questionText.style.display = 'block';
+            optionsContainer.style.display = 'block';
+            scoreArea.style.display = 'none';
+            restartBtn.style.display = 'none';
+            displayQuestion(); // Start displaying questions from the beginning
+        }
+
+        // Event Listeners for buttons
+        submitBtn.addEventListener('click', checkAnswer);
+        nextBtn.addEventListener('click', nextQuestion);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        // Initial display of the first question when the page loads
+        displayQuestion();
+    </script>
+</body>
+</html>
