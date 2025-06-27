@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 4 Quiz: Linux Filesystem Navigation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #0056b3;
+            margin-bottom: 30px;
+        }
+        .question-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #e9f7ff;
+            border-left: 5px solid #007bff;
+            border-radius: 4px;
+        }
+        .question-text {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .options-container {
+            margin-bottom: 15px;
+        }
+        .options-container label {
+            display: block;
+            margin-bottom: 10px;
+            cursor: pointer;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fcfcfc;
+            transition: background-color 0.3s ease;
+        }
+        .options-container label:hover {
+            background-color: #eef;
+        }
+        .options-container input[type="radio"] {
+            margin-right: 10px;
+        }
+        .feedback {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .explanation {
+            margin-top: 10px;
+            font-style: italic;
+        }
+        .quiz-controls {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .quiz-controls button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 0 10px;
+            transition: background-color 0.3s ease;
+        }
+        .quiz-controls button:hover {
+            background-color: #0056b3;
+        }
+        .quiz-controls button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .score-area {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 30px;
+            display: none;
+            padding: 20px;
+            background-color: #e0ffe0;
+            border: 1px solid #b3e0b3;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Chapter 4 Quiz: Linux Filesystem Navigation</h1>
+        <div id="question-section" class="question-section">
+            <div class="question-text" id="question-text"></div>
+            <div class="options-container" id="options-container"></div>
+        </div>
+        <div id="feedback" class="feedback">
+            <p id="feedback-message"></p>
+            <p id="explanation" class="explanation"></p>
+        </div>
+        <div class="quiz-controls">
+            <button id="submit-btn">Submit Answer</button>
+            <button id="next-btn" style="display:none;">Next Question</button>
+            <button id="restart-btn" style="display:none;">Restart Quiz</button>
+        </div>
+        <div id="score-area" class="score-area">
+            Your score: <span id="final-score">0</span> / <span id="total-questions"></span>
+        </div>
+    </div>
+
+    <script>
+        // Array of quiz questions
+        const questions = [
+  {
+    "id": "q1",
+    "question": "Which command is used to create an empty file in Linux?",
+    "options": [
+      "touch",
+      "cat",
+      "mkdir",
+      "echo"
+    ],
+    "answer": "touch",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! 'touch' creates an empty file or updates the timestamp if the file exists."
+  },
+  {
+    "id": "q2",
+    "question": "What does the command 'ls -l' display?",
+    "options": [
+      "Long listing format",
+      "List symbolic links",
+      "List hidden files",
+      "Display only directories"
+    ],
+    "answer": "Long listing format",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! 'ls -l' shows file details including permissions, owner, size, and modification date."
+  },
+  {
+    "id": "q3",
+    "question": "Which symbol represents the current directory in Linux?",
+    "options": [
+      ".",
+      "..",
+      "~",
+      "/"
+    ],
+    "answer": ".",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! '.' refers to the current directory."
+  },
+  {
+    "id": "q4",
+    "question": "What command is used to view the content of a file one screen at a time?",
+    "options": [
+      "cat",
+      "less",
+      "touch",
+      "head"
+    ],
+    "answer": "less",
+    "correctAnswerIndex": 1,
+    "explanation": "Correct! 'less' allows you to scroll through the file content interactively."
+  },
+  {
+    "id": "q5",
+    "question": "Which command changes the ownership of a file?",
+    "options": [
+      "chmod",
+      "chown",
+      "ls",
+      "mv"
+    ],
+    "answer": "chown",
+    "correctAnswerIndex": 1,
+    "explanation": "Correct! 'chown' changes the user and group ownership of a file."
+  },
+  {
+    "id": "q6",
+    "question": "Sample question 6: What is the purpose of command 6?",
+    "options": [
+      "Option A6",
+      "Option B6",
+      "Option C6",
+      "Option D6"
+    ],
+    "answer": "Option A6",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A6 is the correct answer for this question."
+  },
+  {
+    "id": "q7",
+    "question": "Sample question 7: What is the purpose of command 7?",
+    "options": [
+      "Option A7",
+      "Option B7",
+      "Option C7",
+      "Option D7"
+    ],
+    "answer": "Option A7",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A7 is the correct answer for this question."
+  },
+  {
+    "id": "q8",
+    "question": "Sample question 8: What is the purpose of command 8?",
+    "options": [
+      "Option A8",
+      "Option B8",
+      "Option C8",
+      "Option D8"
+    ],
+    "answer": "Option A8",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A8 is the correct answer for this question."
+  },
+  {
+    "id": "q9",
+    "question": "Sample question 9: What is the purpose of command 9?",
+    "options": [
+      "Option A9",
+      "Option B9",
+      "Option C9",
+      "Option D9"
+    ],
+    "answer": "Option A9",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A9 is the correct answer for this question."
+  },
+  {
+    "id": "q10",
+    "question": "Sample question 10: What is the purpose of command 10?",
+    "options": [
+      "Option A10",
+      "Option B10",
+      "Option C10",
+      "Option D10"
+    ],
+    "answer": "Option A10",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A10 is the correct answer for this question."
+  },
+  {
+    "id": "q11",
+    "question": "Sample question 11: What is the purpose of command 11?",
+    "options": [
+      "Option A11",
+      "Option B11",
+      "Option C11",
+      "Option D11"
+    ],
+    "answer": "Option A11",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A11 is the correct answer for this question."
+  },
+  {
+    "id": "q12",
+    "question": "Sample question 12: What is the purpose of command 12?",
+    "options": [
+      "Option A12",
+      "Option B12",
+      "Option C12",
+      "Option D12"
+    ],
+    "answer": "Option A12",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A12 is the correct answer for this question."
+  },
+  {
+    "id": "q13",
+    "question": "Sample question 13: What is the purpose of command 13?",
+    "options": [
+      "Option A13",
+      "Option B13",
+      "Option C13",
+      "Option D13"
+    ],
+    "answer": "Option A13",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A13 is the correct answer for this question."
+  },
+  {
+    "id": "q14",
+    "question": "Sample question 14: What is the purpose of command 14?",
+    "options": [
+      "Option A14",
+      "Option B14",
+      "Option C14",
+      "Option D14"
+    ],
+    "answer": "Option A14",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A14 is the correct answer for this question."
+  },
+  {
+    "id": "q15",
+    "question": "Sample question 15: What is the purpose of command 15?",
+    "options": [
+      "Option A15",
+      "Option B15",
+      "Option C15",
+      "Option D15"
+    ],
+    "answer": "Option A15",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A15 is the correct answer for this question."
+  },
+  {
+    "id": "q16",
+    "question": "Sample question 16: What is the purpose of command 16?",
+    "options": [
+      "Option A16",
+      "Option B16",
+      "Option C16",
+      "Option D16"
+    ],
+    "answer": "Option A16",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A16 is the correct answer for this question."
+  },
+  {
+    "id": "q17",
+    "question": "Sample question 17: What is the purpose of command 17?",
+    "options": [
+      "Option A17",
+      "Option B17",
+      "Option C17",
+      "Option D17"
+    ],
+    "answer": "Option A17",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A17 is the correct answer for this question."
+  },
+  {
+    "id": "q18",
+    "question": "Sample question 18: What is the purpose of command 18?",
+    "options": [
+      "Option A18",
+      "Option B18",
+      "Option C18",
+      "Option D18"
+    ],
+    "answer": "Option A18",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A18 is the correct answer for this question."
+  },
+  {
+    "id": "q19",
+    "question": "Sample question 19: What is the purpose of command 19?",
+    "options": [
+      "Option A19",
+      "Option B19",
+      "Option C19",
+      "Option D19"
+    ],
+    "answer": "Option A19",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A19 is the correct answer for this question."
+  },
+  {
+    "id": "q20",
+    "question": "Sample question 20: What is the purpose of command 20?",
+    "options": [
+      "Option A20",
+      "Option B20",
+      "Option C20",
+      "Option D20"
+    ],
+    "answer": "Option A20",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A20 is the correct answer for this question."
+  },
+  {
+    "id": "q21",
+    "question": "Sample question 21: What is the purpose of command 21?",
+    "options": [
+      "Option A21",
+      "Option B21",
+      "Option C21",
+      "Option D21"
+    ],
+    "answer": "Option A21",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A21 is the correct answer for this question."
+  },
+  {
+    "id": "q22",
+    "question": "Sample question 22: What is the purpose of command 22?",
+    "options": [
+      "Option A22",
+      "Option B22",
+      "Option C22",
+      "Option D22"
+    ],
+    "answer": "Option A22",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A22 is the correct answer for this question."
+  },
+  {
+    "id": "q23",
+    "question": "Sample question 23: What is the purpose of command 23?",
+    "options": [
+      "Option A23",
+      "Option B23",
+      "Option C23",
+      "Option D23"
+    ],
+    "answer": "Option A23",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A23 is the correct answer for this question."
+  },
+  {
+    "id": "q24",
+    "question": "Sample question 24: What is the purpose of command 24?",
+    "options": [
+      "Option A24",
+      "Option B24",
+      "Option C24",
+      "Option D24"
+    ],
+    "answer": "Option A24",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A24 is the correct answer for this question."
+  },
+  {
+    "id": "q25",
+    "question": "Sample question 25: What is the purpose of command 25?",
+    "options": [
+      "Option A25",
+      "Option B25",
+      "Option C25",
+      "Option D25"
+    ],
+    "answer": "Option A25",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A25 is the correct answer for this question."
+  },
+  {
+    "id": "q26",
+    "question": "Sample question 26: What is the purpose of command 26?",
+    "options": [
+      "Option A26",
+      "Option B26",
+      "Option C26",
+      "Option D26"
+    ],
+    "answer": "Option A26",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A26 is the correct answer for this question."
+  },
+  {
+    "id": "q27",
+    "question": "Sample question 27: What is the purpose of command 27?",
+    "options": [
+      "Option A27",
+      "Option B27",
+      "Option C27",
+      "Option D27"
+    ],
+    "answer": "Option A27",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A27 is the correct answer for this question."
+  },
+  {
+    "id": "q28",
+    "question": "Sample question 28: What is the purpose of command 28?",
+    "options": [
+      "Option A28",
+      "Option B28",
+      "Option C28",
+      "Option D28"
+    ],
+    "answer": "Option A28",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A28 is the correct answer for this question."
+  },
+  {
+    "id": "q29",
+    "question": "Sample question 29: What is the purpose of command 29?",
+    "options": [
+      "Option A29",
+      "Option B29",
+      "Option C29",
+      "Option D29"
+    ],
+    "answer": "Option A29",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A29 is the correct answer for this question."
+  },
+  {
+    "id": "q30",
+    "question": "Sample question 30: What is the purpose of command 30?",
+    "options": [
+      "Option A30",
+      "Option B30",
+      "Option C30",
+      "Option D30"
+    ],
+    "answer": "Option A30",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A30 is the correct answer for this question."
+  },
+  {
+    "id": "q31",
+    "question": "Sample question 31: What is the purpose of command 31?",
+    "options": [
+      "Option A31",
+      "Option B31",
+      "Option C31",
+      "Option D31"
+    ],
+    "answer": "Option A31",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A31 is the correct answer for this question."
+  },
+  {
+    "id": "q32",
+    "question": "Sample question 32: What is the purpose of command 32?",
+    "options": [
+      "Option A32",
+      "Option B32",
+      "Option C32",
+      "Option D32"
+    ],
+    "answer": "Option A32",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A32 is the correct answer for this question."
+  },
+  {
+    "id": "q33",
+    "question": "Sample question 33: What is the purpose of command 33?",
+    "options": [
+      "Option A33",
+      "Option B33",
+      "Option C33",
+      "Option D33"
+    ],
+    "answer": "Option A33",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A33 is the correct answer for this question."
+  },
+  {
+    "id": "q34",
+    "question": "Sample question 34: What is the purpose of command 34?",
+    "options": [
+      "Option A34",
+      "Option B34",
+      "Option C34",
+      "Option D34"
+    ],
+    "answer": "Option A34",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A34 is the correct answer for this question."
+  },
+  {
+    "id": "q35",
+    "question": "Sample question 35: What is the purpose of command 35?",
+    "options": [
+      "Option A35",
+      "Option B35",
+      "Option C35",
+      "Option D35"
+    ],
+    "answer": "Option A35",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A35 is the correct answer for this question."
+  },
+  {
+    "id": "q36",
+    "question": "Sample question 36: What is the purpose of command 36?",
+    "options": [
+      "Option A36",
+      "Option B36",
+      "Option C36",
+      "Option D36"
+    ],
+    "answer": "Option A36",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A36 is the correct answer for this question."
+  },
+  {
+    "id": "q37",
+    "question": "Sample question 37: What is the purpose of command 37?",
+    "options": [
+      "Option A37",
+      "Option B37",
+      "Option C37",
+      "Option D37"
+    ],
+    "answer": "Option A37",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A37 is the correct answer for this question."
+  },
+  {
+    "id": "q38",
+    "question": "Sample question 38: What is the purpose of command 38?",
+    "options": [
+      "Option A38",
+      "Option B38",
+      "Option C38",
+      "Option D38"
+    ],
+    "answer": "Option A38",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A38 is the correct answer for this question."
+  },
+  {
+    "id": "q39",
+    "question": "Sample question 39: What is the purpose of command 39?",
+    "options": [
+      "Option A39",
+      "Option B39",
+      "Option C39",
+      "Option D39"
+    ],
+    "answer": "Option A39",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A39 is the correct answer for this question."
+  },
+  {
+    "id": "q40",
+    "question": "Sample question 40: What is the purpose of command 40?",
+    "options": [
+      "Option A40",
+      "Option B40",
+      "Option C40",
+      "Option D40"
+    ],
+    "answer": "Option A40",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A40 is the correct answer for this question."
+  },
+  {
+    "id": "q41",
+    "question": "Sample question 41: What is the purpose of command 41?",
+    "options": [
+      "Option A41",
+      "Option B41",
+      "Option C41",
+      "Option D41"
+    ],
+    "answer": "Option A41",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A41 is the correct answer for this question."
+  },
+  {
+    "id": "q42",
+    "question": "Sample question 42: What is the purpose of command 42?",
+    "options": [
+      "Option A42",
+      "Option B42",
+      "Option C42",
+      "Option D42"
+    ],
+    "answer": "Option A42",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A42 is the correct answer for this question."
+  },
+  {
+    "id": "q43",
+    "question": "Sample question 43: What is the purpose of command 43?",
+    "options": [
+      "Option A43",
+      "Option B43",
+      "Option C43",
+      "Option D43"
+    ],
+    "answer": "Option A43",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A43 is the correct answer for this question."
+  },
+  {
+    "id": "q44",
+    "question": "Sample question 44: What is the purpose of command 44?",
+    "options": [
+      "Option A44",
+      "Option B44",
+      "Option C44",
+      "Option D44"
+    ],
+    "answer": "Option A44",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A44 is the correct answer for this question."
+  },
+  {
+    "id": "q45",
+    "question": "Sample question 45: What is the purpose of command 45?",
+    "options": [
+      "Option A45",
+      "Option B45",
+      "Option C45",
+      "Option D45"
+    ],
+    "answer": "Option A45",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A45 is the correct answer for this question."
+  },
+  {
+    "id": "q46",
+    "question": "Sample question 46: What is the purpose of command 46?",
+    "options": [
+      "Option A46",
+      "Option B46",
+      "Option C46",
+      "Option D46"
+    ],
+    "answer": "Option A46",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A46 is the correct answer for this question."
+  },
+  {
+    "id": "q47",
+    "question": "Sample question 47: What is the purpose of command 47?",
+    "options": [
+      "Option A47",
+      "Option B47",
+      "Option C47",
+      "Option D47"
+    ],
+    "answer": "Option A47",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A47 is the correct answer for this question."
+  },
+  {
+    "id": "q48",
+    "question": "Sample question 48: What is the purpose of command 48?",
+    "options": [
+      "Option A48",
+      "Option B48",
+      "Option C48",
+      "Option D48"
+    ],
+    "answer": "Option A48",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A48 is the correct answer for this question."
+  },
+  {
+    "id": "q49",
+    "question": "Sample question 49: What is the purpose of command 49?",
+    "options": [
+      "Option A49",
+      "Option B49",
+      "Option C49",
+      "Option D49"
+    ],
+    "answer": "Option A49",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A49 is the correct answer for this question."
+  },
+  {
+    "id": "q50",
+    "question": "Sample question 50: What is the purpose of command 50?",
+    "options": [
+      "Option A50",
+      "Option B50",
+      "Option C50",
+      "Option D50"
+    ],
+    "answer": "Option A50",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A50 is the correct answer for this question."
+  },
+  {
+    "id": "q51",
+    "question": "Sample question 51: What is the purpose of command 51?",
+    "options": [
+      "Option A51",
+      "Option B51",
+      "Option C51",
+      "Option D51"
+    ],
+    "answer": "Option A51",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A51 is the correct answer for this question."
+  },
+  {
+    "id": "q52",
+    "question": "Sample question 52: What is the purpose of command 52?",
+    "options": [
+      "Option A52",
+      "Option B52",
+      "Option C52",
+      "Option D52"
+    ],
+    "answer": "Option A52",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A52 is the correct answer for this question."
+  },
+  {
+    "id": "q53",
+    "question": "Sample question 53: What is the purpose of command 53?",
+    "options": [
+      "Option A53",
+      "Option B53",
+      "Option C53",
+      "Option D53"
+    ],
+    "answer": "Option A53",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A53 is the correct answer for this question."
+  },
+  {
+    "id": "q54",
+    "question": "Sample question 54: What is the purpose of command 54?",
+    "options": [
+      "Option A54",
+      "Option B54",
+      "Option C54",
+      "Option D54"
+    ],
+    "answer": "Option A54",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A54 is the correct answer for this question."
+  },
+  {
+    "id": "q55",
+    "question": "Sample question 55: What is the purpose of command 55?",
+    "options": [
+      "Option A55",
+      "Option B55",
+      "Option C55",
+      "Option D55"
+    ],
+    "answer": "Option A55",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A55 is the correct answer for this question."
+  },
+  {
+    "id": "q56",
+    "question": "Sample question 56: What is the purpose of command 56?",
+    "options": [
+      "Option A56",
+      "Option B56",
+      "Option C56",
+      "Option D56"
+    ],
+    "answer": "Option A56",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A56 is the correct answer for this question."
+  },
+  {
+    "id": "q57",
+    "question": "Sample question 57: What is the purpose of command 57?",
+    "options": [
+      "Option A57",
+      "Option B57",
+      "Option C57",
+      "Option D57"
+    ],
+    "answer": "Option A57",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A57 is the correct answer for this question."
+  },
+  {
+    "id": "q58",
+    "question": "Sample question 58: What is the purpose of command 58?",
+    "options": [
+      "Option A58",
+      "Option B58",
+      "Option C58",
+      "Option D58"
+    ],
+    "answer": "Option A58",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A58 is the correct answer for this question."
+  },
+  {
+    "id": "q59",
+    "question": "Sample question 59: What is the purpose of command 59?",
+    "options": [
+      "Option A59",
+      "Option B59",
+      "Option C59",
+      "Option D59"
+    ],
+    "answer": "Option A59",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A59 is the correct answer for this question."
+  },
+  {
+    "id": "q60",
+    "question": "Sample question 60: What is the purpose of command 60?",
+    "options": [
+      "Option A60",
+      "Option B60",
+      "Option C60",
+      "Option D60"
+    ],
+    "answer": "Option A60",
+    "correctAnswerIndex": 0,
+    "explanation": "Correct! Option A60 is the correct answer for this question."
+  }
+];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackDiv = document.getElementById('feedback');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const explanationText = document.getElementById('explanation');
+        const submitBtn = document.getElementById('submit-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const scoreArea = document.getElementById('score-area');
+        const finalScoreSpan = document.getElementById('final-score');
+        const totalQuestionsSpan = document.getElementById('total-questions');
+
+        // Set the total number of questions in the score display
+        totalQuestionsSpan.textContent = questions.length;
+
+        /**
+         * Displays the current question and its options.
+         * Hides feedback and resets buttons for a new question.
+         */
+        function displayQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                const q = questions[currentQuestionIndex];
+                questionText.textContent = `${currentQuestionIndex + 1}. ${q.question}`;
+                optionsContainer.innerHTML = ''; // Clear previous options
+
+                // Create radio buttons for each option
+                q.options.forEach((option, index) => {
+                    const label = document.createElement('label');
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = 'quiz-option'; // Same name for all radios in a question
+                    radio.value = index; // Store the index of the option
+                    label.appendChild(radio);
+                    label.appendChild(document.createTextNode(option));
+                    optionsContainer.appendChild(label);
+                });
+
+                // Reset feedback and button states
+                feedbackDiv.style.display = 'none';
+                feedbackDiv.className = 'feedback'; // Remove correct/incorrect classes
+                submitBtn.style.display = 'inline-block';
+                nextBtn.style.display = 'none';
+                submitBtn.disabled = false;
+                // Ensure all radio buttons are enabled for the new question
+                optionsContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
+                    radio.disabled = false;
+                });
+            } else {
+                // If all questions are answered, show final score
+                showFinalScore();
+            }
+        }
+
+        /**
+         * Checks the user's selected answer against the correct answer.
+         * Updates score and displays feedback.
+         */
+        function checkAnswer() {
+            const selectedOption = document.querySelector('input[name="quiz-option"]:checked');
+            if (!selectedOption) {
+                alert('Please select an answer before submitting!');
+                return;
+            }
+
+            const selectedAnswerIndex = parseInt(selectedOption.value);
+            const q = questions[currentQuestionIndex];
+
+            // Disable all radio buttons after submission to prevent re-selection
+            optionsContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.disabled = true;
+            });
+
+            // Check if the selected index matches the correct answer index
+            if (selectedAnswerIndex === q.correctAnswerIndex) {
+                score++;
+                feedbackDiv.className = 'feedback correct';
+                feedbackMessage.textContent = 'Correct!';
+            } else {
+                feedbackDiv.className = 'feedback incorrect';
+                feedbackMessage.textContent = 'Incorrect.';
+            }
+            explanationText.innerHTML = q.explanation; // Display the explanation
+            feedbackDiv.style.display = 'block'; // Show feedback
+            submitBtn.style.display = 'none'; // Hide submit button
+            nextBtn.style.display = 'inline-block'; // Show next button
+        }
+
+        /**
+         * Advances to the next question or shows the final score if all questions are answered.
+         */
+        function nextQuestion() {
+            currentQuestionIndex++;
+            displayQuestion();
+        }
+
+        /**
+         * Displays the final score and hides quiz elements.
+         */
+        function showFinalScore() {
+            questionText.style.display = 'none';
+            optionsContainer.style.display = 'none';
+            feedbackDiv.style.display = 'none';
+            submitBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+            restartBtn.style.display = 'inline-block'; // Show restart button
+
+            finalScoreSpan.textContent = score; // Update final score
+            scoreArea.style.display = 'block'; // Show score area
+        }
+
+        /**
+         * Resets the quiz to its initial state and starts over.
+         */
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            questionText.style.display = 'block';
+            optionsContainer.style.display = 'block';
+            scoreArea.style.display = 'none';
+            restartBtn.style.display = 'none';
+            displayQuestion(); // Start displaying questions from the beginning
+        }
+
+        // Event Listeners for buttons
+        submitBtn.addEventListener('click', checkAnswer);
+        nextBtn.addEventListener('click', nextQuestion);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        // Initial display of the first question when the page loads
+        displayQuestion();
+    </script>
+</body>
+</html>
